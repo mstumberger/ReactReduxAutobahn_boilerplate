@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import {
+  EVENT,
   CONNECTION_CLOSED,
   CONNECTION_OPENED,
 } from '../../AutobahnMiddleware/types';
@@ -13,6 +14,8 @@ const initialState = {
   role: '',
   loggedIn: false,
   loginError: false,
+  rpcCall: '',
+  pubSub: '',
 };
 
 export default function auth(state = initialState, action = {}) {
@@ -42,7 +45,27 @@ export default function auth(state = initialState, action = {}) {
         user: action.username,
         password: action.password,
       };
+    case EVENT:
+      switch (action.topic) {
+        case 'com.example.oncounter':
+          console.log(action);
+          return {
+            ...state,
+            pubSub: action.args,
+          };
+        default:
+          return state;
+      }
     default:
-      return state;
+      switch (action.procedure) {
+        case 'com.example.ping':
+          console.log(action);
+          return {
+            ...state,
+            rpcCall: action.results,
+          };
+        default:
+          return state;
+      }
   }
 }

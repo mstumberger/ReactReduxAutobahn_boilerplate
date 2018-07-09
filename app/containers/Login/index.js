@@ -9,16 +9,26 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { auth_cra as authCra, Connection } from 'autobahn';
 import { createStructuredSelector } from 'reselect';
+import reduxAutobahn from '../../AutobahnMiddleware';
 import { loginRequest } from './actions';
 import {
   makeSelectLoggedIn,
   makeSelectUsername,
   makeSelectRole,
   makeSelectLoginError,
+  makeRpcCallSelect,
+  makepubSubSelect,
+  selectAutobahnConnection,
 } from './selectors';
 import { store } from '../../app';
+
+const isConnected = (props) => props.autobahnConnection.connection.isConnected;
+
+const isSubscribed = (props, topic) => props.autobahnConnection.subscriptions.filter((s) => s.topic === topic).length > 0;
+
 
 export class Login extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function
   static logout(event) {
@@ -29,19 +39,35 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
 
   constructor(props) {
     super(props);
-    this.state = { username: '', password: '' };
+    this.state = { username: '', password: '', rpcCall: '' };
     this.changeUsername = this.changeUsername.bind(this);
     this.changePassword = this.changePassword.bind(this);
+    this.rpcCall = this.rpcCall.bind(this);
     this.login = this.login.bind(this);
   }
 
-  /**
-   * when initial state username is not null, submit the form to load repos
-   */
   componentDidMount() {
     if (this.state.username && this.state.username.trim().length > 0) {
       this.login();
     }
+  }
+
+  componentWillReceiveProps(newProps) {
+    if (this.isNewConnection(newProps)) {
+      console.log('Side menu - connected - subscribe and call');
+      this.props.actions.subscribe('com.example.oncounter');
+    }
+    if (this.isNewSubscription(newProps, 'com.example.oncounter')) {
+      console.log('new subscription to:', 'com.example.oncounter');
+    }
+  }
+
+  isNewConnection(newProps) {
+    return !isConnected(this.props) && isConnected(newProps);
+  }
+
+  isNewSubscription(newProps, topic) {
+    return !isSubscribed(this.props, topic) && isSubscribed(newProps, topic);
   }
 
   changeUsername(event) {
@@ -64,7 +90,6 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
         `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8080/ws`,
         )
     );
-
     store.setAutobahnConnection(new Connection({
       url: `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8080/ws`,
       realm: 'realm1',
@@ -80,6 +105,11 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
         throw `don't know how to authenticate using '${method}'`;
       },
     }));
+  }
+
+  rpcCall(event) {
+    event.preventDefault();
+    this.props.actions.call('com.example.ping');
   }
 
   render() {
@@ -128,7 +158,16 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
                       {JSON.stringify(loginError)}
                     </div>}
                   <button className="btn btn-primary btn-block" onClick={(e) => this.login(e)}><i className="fa fa-sign-in" />{' '}Log in</button>
+                  {this.props.pubSub &&
+                  <div className="alert alert-danger">
+                    {this.props.pubSub}
+                  </div>}
                   <button className="btn btn-primary btn-block" onClick={(e) => Login.logout(e)}><i className="fa fa-sign-in" />{' '}Log Out</button>
+                  <button className="btn btn-primary btn-block" onClick={(e) => this.rpcCall(e)}><i className="fa fa-sign-in" />{' '}Call</button>
+                  {this.props.rpcCall &&
+                  <div className="alert alert-danger">
+                    {this.props.rpcCall}
+                  </div>}
                 </form>
               </div>
             </div>
@@ -142,11 +181,15 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
 Login.propTypes = {
   dispatch: PropTypes.func,
   auth: PropTypes.object,
+  actions: PropTypes.object,
+  rpcCall: PropTypes.string,
+  pubSub: PropTypes.any,
 };
 
 export function mapDispatchToProps(dispatch) {
   return {
     dispatch,
+    actions: bindActionCreators(reduxAutobahn.actions, dispatch),
   };
 }
 
@@ -157,6 +200,9 @@ const mapStateToProps = createStructuredSelector({
     role: makeSelectRole(),
     loginError: makeSelectLoginError(),
   }),
+  rpcCall: makeRpcCallSelect(),
+  pubSub: makepubSubSelect(),
+  autobahnConnection: selectAutobahnConnection(),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login);
