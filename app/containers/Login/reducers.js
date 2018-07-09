@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import {
   EVENT,
+  RESULT,
   CONNECTION_CLOSED,
   CONNECTION_OPENED,
 } from '../../AutobahnMiddleware/types';
@@ -29,14 +30,14 @@ export default function auth(state = initialState, action = {}) {
       };
     case CONNECTION_CLOSED:
       if (action.details.reason !== 'wamp.close.normal') {
-        console.log(action.details.reason);
+        console.log(action.reason);
         return {
           ...state,
           user: '',
           password: '',
           role: '',
           loggedIn: false,
-          loginError: action.details.message };
+          loginError: action.details.message || action.reason };
       }
       return state;
     case LOGIN_PROCEDURE:
@@ -56,7 +57,7 @@ export default function auth(state = initialState, action = {}) {
         default:
           return state;
       }
-    default:
+    case RESULT:
       switch (action.procedure) {
         case 'com.example.ping':
           console.log(action);
@@ -67,5 +68,7 @@ export default function auth(state = initialState, action = {}) {
         default:
           return state;
       }
+    default:
+      return state;
   }
 }
