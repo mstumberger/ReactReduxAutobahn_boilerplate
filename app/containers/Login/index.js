@@ -11,7 +11,7 @@ import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { auth_cra as authCra, Connection } from 'autobahn';
-import { createStructuredSelector } from 'reselect';
+import { createStructuredSelector } from 'reselect/es';
 import reduxAutobahn from '../../AutobahnMiddleware';
 import { loginRequest } from './actions';
 import {
@@ -87,11 +87,13 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
       loginRequest(
         this.state.username,
         this.state.password,
-        `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8080/ws`,
+        'wss://cryptocademy.pro/ws',
+        // `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8000/ws`,
         )
     );
     store.setAutobahnConnection(new Connection({
-      url: `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8080/ws`,
+      // url: `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8000/ws`,
+      url: 'wss://cryptocademy.pro/ws',
       realm: 'realm1',
       authmethods: ['wampcra'],
       authid: this.state.username,
