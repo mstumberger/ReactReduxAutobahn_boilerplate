@@ -52,7 +52,7 @@ export default function auth(state = initialState, action = {}) {
           console.log(action);
           return {
             ...state,
-            pubSub: action.args,
+            pubSub: action.args[0],
           };
         default:
           return state;
