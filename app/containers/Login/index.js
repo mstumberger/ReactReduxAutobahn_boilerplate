@@ -92,8 +92,8 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
         )
     );
     store.setAutobahnConnection(new Connection({
-      // url: `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8000/ws`,
-      url: 'wss://cryptocademy.pro/ws',
+      url: `${document.location.protocol === 'http:' ? 'ws:' : 'wss:'}//${document.location.host.split(':')[0]}:8080/ws`,
+      // url: 'wss://cryptocademy.pro/ws',
       realm: 'realm1',
       authmethods: ['wampcra'],
       authid: this.state.username,
@@ -107,6 +107,8 @@ export class Login extends React.PureComponent { // eslint-disable-line react/pr
         throw `don't know how to authenticate using '${method}'`;
       },
     }));
+    console.log('open connection');
+    this.props.actions.openConnection();
   }
 
   rpcCall(event) {

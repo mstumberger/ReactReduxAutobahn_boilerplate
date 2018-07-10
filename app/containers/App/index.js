@@ -10,13 +10,13 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 import { Switch, Route } from 'react-router-dom';
-
 import HomePage from 'containers/HomePage/Loadable';
 import Login from 'containers/Login/Loadable';
 import FeaturePage from 'containers/FeaturePage/Loadable';
 import NotFoundPage from 'containers/NotFoundPage/Loadable';
 import Header from 'components/Header';
 import Footer from 'components/Footer';
+import PrivateRoute from '../../Router/PrivateRoute';
 
 const AppWrapper = styled.div`
   max-width: calc(768px + 16px * 2);
@@ -38,9 +38,9 @@ export default function App() {
       </Helmet>
       <Header />
       <Switch>
-        <Route exact path="/" component={HomePage} />
-        <Route path="/features" component={FeaturePage} />
-        <Route path="/login" component={Login} />
+        <PrivateRoute exact path="/" component={HomePage} />
+        <PrivateRoute exact path="/features" component={FeaturePage} />
+        <Route exact path="/login" component={Login} />
         <Route path="" component={NotFoundPage} />
       </Switch>
       <Footer />

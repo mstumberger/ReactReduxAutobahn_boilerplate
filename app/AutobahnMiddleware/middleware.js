@@ -374,7 +374,7 @@ export default function autobahnMiddlewareFactory({ connection } = {}) {
         autobahnMiddleware._connection = null;
         dispatch(connectionClosed(reason, details));
       };
-      newConnection.open();
+      // newConnection.open();
       autobahnMiddleware._connection = newConnection;
     };
 
